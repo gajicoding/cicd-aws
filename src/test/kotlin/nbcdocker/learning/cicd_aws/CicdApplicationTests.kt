@@ -29,7 +29,7 @@ class CicdApplicationTests {
 //		assertThat(response.body).isEqualTo("on failed")
 
 		// 성공하는 경우
-		assertThat(response.body).isEqualTo("healthz")
+		assertThat(response.body).isEqualTo("healthz-aws")
 	}
 
 }
