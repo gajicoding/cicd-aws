@@ -1,4 +1,4 @@
-name: Deploy
+name: Docker Deploy to EC2
 
 on:
   workflow_dispatch:
@@ -17,24 +17,31 @@ jobs:
         uses: actions/setup-java@v4
         with:
           java-version: '17'
-          distribution: 'adopt'
+          distribution: 'temurin'
 
       - name: Grant execute permission for gradlew
         run: chmod +x ./gradlew
 
-      - name: gradlew bootJar
+      - name: Build Spring Boot App
         run: ./gradlew bootJar
 
-      - name: copy jar to server
+      - name: Build Docker image
+        run: docker build -t cicd-aws:latest .
+
+      - name: Save Docker image as tar
+        run: docker save cicd-aws:latest -o app-image.tar
+
+      - name: Copy Docker image and compose file to EC2
         uses: appleboy/scp-action@master
         with:
           host: ${{ secrets.SSH_HOST }}
           username: ec2-user
           key: ${{ secrets.SSH_KEY }}
           port: 22
-          source: "./build/libs/*.jar"
-          target: "~"
-          strip_components: 2
+          source: |
+            app-image.tar
+            docker-compose.yml
+            target: ~/deploy
 
       - name: SSH Commands
         uses: appleboy/ssh-action@v0.1.6
@@ -43,13 +50,8 @@ jobs:
           username: ec2-user
           key: ${{ secrets.SSH_KEY }}
           port: 22
-          script_stop: true
           script: |
-            sudo yum update -y && sudo yum install -y java-21-amazon-corretto
-            for pid in $(pgrep java); do
-              if ps -p $pid -o args= | grep -q 'java -jar'; then
-                echo "Java process with 'java -jar' found (PID: $pid). Terminating..."
-                kill -9 $pid
-              fi
-            done
-            echo "nohup java -jar ~/*.jar > ~/app.log 2>&1 &" | at now
+            cd ~/deploy
+            docker load -i app-image.tar
+            docker compose down || true
+            docker compose up -d
