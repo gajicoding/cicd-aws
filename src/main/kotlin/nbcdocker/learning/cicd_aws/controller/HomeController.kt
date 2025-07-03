@@ -6,12 +6,13 @@ import org.springframework.web.bind.annotation.RestController
 
 @RestController
 class HomeController(
+    @Value("\${DB_URL}") private val url: String,
     @Value("\${DB_USERNAME}") private val username: String,
 ) {
 
     @GetMapping("/")
     fun home(): String {
-        return "home-aws $username"
+        return "home-aws $url $username"
     }
 
     @GetMapping("/healthz")
