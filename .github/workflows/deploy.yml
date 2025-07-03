@@ -41,7 +41,7 @@ jobs:
           source: |
             app-image.tar
             docker-compose.yml
-            target: ~/deploy
+          target: ~/deploy
 
       - name: SSH Commands
         uses: appleboy/ssh-action@v0.1.6
