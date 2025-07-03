@@ -31,6 +31,9 @@ jobs:
       - name: Save Docker image as tar
         run: docker save cicd-aws:latest -o app-image.tar
 
+      - name: List root files
+        run: ls -al
+
       - name: Copy Docker image and compose file to EC2
         uses: appleboy/scp-action@master
         with:
