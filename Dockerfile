@@ -1,5 +1,3 @@
-LABEL authors="KNG"
-
 FROM openjdk:17-jdk-alpine
 WORKDIR /app
 ARG JAR_FILE=build/libs/*.jar
